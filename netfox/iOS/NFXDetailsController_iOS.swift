@@ -108,6 +108,7 @@ class NFXDetailsController_iOS: NFXDetailsController, MFMailComposeViewControlle
         return scrollView
     }
     
+    
     func actionButtonPressed(sender: UIBarButtonItem)
     {
         let actionSheetController: UIAlertController = UIAlertController(title: "Share", message: "", preferredStyle: .ActionSheet)
@@ -116,19 +117,47 @@ class NFXDetailsController_iOS: NFXDetailsController, MFMailComposeViewControlle
         }
         actionSheetController.addAction(cancelAction)
         
-        let simpleLog: UIAlertAction = UIAlertAction(title: "Simple log", style: .Default) { action -> Void in
-            self.sendMailWithBodies(false)
+        let infoLog: UIAlertAction = UIAlertAction(title: "Info", style: .Default) { action -> Void in
+            self.shareLog("** INFO **\n \(self.getInfoStringFromObject(self.selectedModel).string)\n\n")
         }
-        actionSheetController.addAction(simpleLog)
+        actionSheetController.addAction(infoLog)
         
-        let fullLogAction: UIAlertAction = UIAlertAction(title: "Full log", style: .Default) { action -> Void in
-            self.sendMailWithBodies(true)
+        let requestAction: UIAlertAction = UIAlertAction(title: "Request", style: .Default) { action -> Void in
+            self.shareLog("** REQUEST **\n \(self.getRequestStringFromObject(self.selectedModel).string)\n\n")
         }
-        actionSheetController.addAction(fullLogAction)
+        actionSheetController.addAction(requestAction)
+        
+        let responseAction: UIAlertAction = UIAlertAction(title: "Response", style: .Default) { action -> Void in
+            self.shareLog("** RESPONSE **\n \(self.getResponseStringFromObject(self.selectedModel).string)\n\n")
+        }
+        actionSheetController.addAction(responseAction)
+
+        
+        let allLogAction: UIAlertAction = UIAlertAction(title: "All", style: .Default) { action -> Void in
+            var tempString: String
+            tempString = String()
+            
+            tempString += "** INFO **\n"
+            tempString += "\(self.getInfoStringFromObject(self.selectedModel).string)\n\n"
+            
+            tempString += "** REQUEST **\n"
+            tempString += "\(self.getRequestStringFromObject(self.selectedModel).string)\n\n"
+            
+            tempString += "** RESPONSE **\n"
+            tempString += "\(self.getResponseStringFromObject(self.selectedModel).string)\n\n"
+            
+            tempString += "logged via netfox - [https://github.com/kasketis/netfox]\n"
+            self.shareLog(tempString)
+        }
+        actionSheetController.addAction(allLogAction)
         
         self.presentViewController(actionSheetController, animated: true, completion: nil)
     }
     
+    func shareLog(log:String){
+        let activityViewController = UIActivityViewController(activityItems: [log], applicationActivities: nil)
+        self.presentViewController(activityViewController, animated: true, completion: nil)
+    }
     
     func infoButtonPressed()
     {
