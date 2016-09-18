@@ -27,15 +27,15 @@ class NFXDetailsController_iOS: NFXDetailsController, MFMailComposeViewControlle
         
         self.title = "Details"
         
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .Action, target: self, action: Selector("actionButtonPressed:"))
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .Action, target: self, action: #selector(NFXDetailsController_iOS.actionButtonPressed(_:)))
         
-        self.infoButton = createHeaderButton("Info", x: 0, selector: Selector("infoButtonPressed"))
+        self.infoButton = createHeaderButton("Info", x: 0, selector: #selector(NFXDetailsController_iOS.infoButtonPressed))
         self.view.addSubview(self.infoButton)
         
-        self.requestButton = createHeaderButton("Request", x: CGRectGetMaxX(self.infoButton.frame), selector: Selector("requestButtonPressed"))
+        self.requestButton = createHeaderButton("Request", x: CGRectGetMaxX(self.infoButton.frame), selector: #selector(NFXDetailsController_iOS.requestButtonPressed))
         self.view.addSubview(self.requestButton)
         
-        self.responseButton = createHeaderButton("Response", x: CGRectGetMaxX(self.requestButton.frame), selector: Selector("responseButtonPressed"))
+        self.responseButton = createHeaderButton("Response", x: CGRectGetMaxX(self.requestButton.frame), selector: #selector(NFXDetailsController_iOS.responseButtonPressed))
         self.view.addSubview(self.responseButton)
         
         self.infoView = createDetailsView(getInfoStringFromObject(self.selectedModel), forView: .INFO)
@@ -91,13 +91,13 @@ class NFXDetailsController_iOS: NFXDetailsController, MFMailComposeViewControlle
         
         if ((forView == EDetailsView.REQUEST) && (self.selectedModel.requestBodyLength > 1024)) {
             moreButton.setTitle("Show request body", forState: .Normal)
-            moreButton.addTarget(self, action: Selector("requestBodyButtonPressed"), forControlEvents: .TouchUpInside)
+            moreButton.addTarget(self, action: #selector(NFXDetailsController_iOS.requestBodyButtonPressed), forControlEvents: .TouchUpInside)
             scrollView.addSubview(moreButton)
             scrollView.contentSize = CGSizeMake(textLabel.frame.width, CGRectGetMaxY(moreButton.frame))
 
         } else if ((forView == EDetailsView.RESPONSE) && (self.selectedModel.responseBodyLength > 1024)) {
             moreButton.setTitle("Show response body", forState: .Normal)
-            moreButton.addTarget(self, action: Selector("responseBodyButtonPressed"), forControlEvents: .TouchUpInside)
+            moreButton.addTarget(self, action: #selector(NFXDetailsController_iOS.responseBodyButtonPressed), forControlEvents: .TouchUpInside)
             scrollView.addSubview(moreButton)
             scrollView.contentSize = CGSizeMake(textLabel.frame.width, CGRectGetMaxY(moreButton.frame))
             
@@ -128,7 +128,7 @@ class NFXDetailsController_iOS: NFXDetailsController, MFMailComposeViewControlle
         actionSheetController.addAction(requestAction)
         
         let responseAction: UIAlertAction = UIAlertAction(title: "Response", style: .Default) { action -> Void in
-            self.shareLog("** RESPONSE **\n \(self.getResponseStringFromObject(self.selectedModel).string)\n\n")
+            self.shareLog("** RESPONSE **\n \(self.getFullResponseStringFromObject(self.selectedModel).string)\n\n")
         }
         actionSheetController.addAction(responseAction)
 
@@ -221,52 +221,6 @@ class NFXDetailsController_iOS: NFXDetailsController, MFMailComposeViewControlle
         bodyDetailsController.selectedModel(self.selectedModel)
         self.navigationController?.pushViewController(bodyDetailsController, animated: true)
         return bodyDetailsController
-    }
-    
-    func sendMailWithBodies(bodies: Bool)
-    {
-        if (MFMailComposeViewController.canSendMail()) {
-            
-            let mailComposer = MFMailComposeViewController()
-            mailComposer.mailComposeDelegate = self
-            
-            var tempString: String
-            tempString = String()
-            
-            
-            tempString += "** INFO **\n"
-            tempString += "\(getInfoStringFromObject(self.selectedModel).string)\n\n"
-            
-            tempString += "** REQUEST **\n"
-            tempString += "\(getRequestStringFromObject(self.selectedModel).string)\n\n"
-            
-            tempString += "** RESPONSE **\n"
-            tempString += "\(getResponseStringFromObject(self.selectedModel).string)\n\n"
-            
-            tempString += "logged via netfox - [https://github.com/kasketis/netfox]\n"
-            
-            mailComposer.setSubject("netfox log - \(self.selectedModel.requestURL!)")
-            mailComposer.setMessageBody(tempString, isHTML: false)
-            
-            if bodies {
-                let requestFilePath = self.selectedModel.getRequestBodyFilepath()
-                if let requestFileData = NSData(contentsOfFile: requestFilePath as String) {
-                    mailComposer.addAttachmentData(requestFileData, mimeType: "text/plain", fileName: "request-body")
-                }
-                
-                let responseFilePath = self.selectedModel.getResponseBodyFilepath()
-                if let responseFileData = NSData(contentsOfFile: responseFilePath as String) {
-                    mailComposer.addAttachmentData(responseFileData, mimeType: "text/plain", fileName: "response-body")
-                }
-            }
-
-            self.presentViewController(mailComposer, animated: true, completion: nil)
-        }
-    }
-    
-    func mailComposeController(controller: MFMailComposeViewController, didFinishWithResult result: MFMailComposeResult, error: NSError?)
-    {
-        self.dismissViewControllerAnimated(true, completion: nil)
     }
     
 }

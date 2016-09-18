@@ -101,6 +101,32 @@ class NFXDetailsController: NFXGenericController {
         return formatNFXString(tempString)
     }
     
+    func getFullResponseStringFromObject(object: NFXHTTPModel) -> NSAttributedString
+    {
+        if (object.noResponse) {
+            return NSMutableAttributedString(string: "No response")
+        }
+        
+        var tempString: String
+        tempString = String()
+        
+        tempString += "-- Headers --\n\n"
+        
+        if object.responseHeaders?.count > 0 {
+            for (key, val) in object.responseHeaders! {
+                tempString += "[\(key)] \n\(val)\n\n"
+            }
+        } else {
+            tempString += "Response headers are empty\n\n"
+        }
+        
+        
+        #if os(iOS)
+            tempString += "\n-- Body --\n\n" + "\(object.getResponseBody())\n"
+        #endif
+        return formatNFXString(tempString)
+    }
+    
     func getResponseBodyStringFooter(object: NFXHTTPModel) -> String {
         var tempString = "\n-- Body --\n\n"
         if (object.responseBodyLength == 0) {
